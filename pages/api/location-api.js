@@ -34,6 +34,7 @@ export default async function handler(req, res) {
     };
 
     let removeVariant = [];
+    let outStockVariant = [];
     let location = req.body.locationId;
     let variantId = req.body.variantArr;
     console.log('body', req)
@@ -44,7 +45,11 @@ export default async function handler(req, res) {
     let result = await response.json();
 
     let arrayInventory = result.inventory_levels;
-    let inventoryItemId = arrayInventory.filter(i => i.available > 0).map(i => i.inventory_item_id)
+    let inventoryItemId = arrayInventory.map(i => i.inventory_item_id)
+    let inventoryOutOfStockItemId = arrayInventory.filter(i => i.available == 0).map(i => i.inventory_item_id)
+    console.log("invent-id",{inventoryItemId})
+    console.log("invent-id-out-of-stock",{inventoryOutOfStockItemId})
+
 
     for (let e of variantId) {
         console.log({ e })
@@ -56,7 +61,11 @@ export default async function handler(req, res) {
             removeVariant.push(e);
             console.log("removed", e);
         }
+        if ((inventoryOutOfStockItemId.includes(result2.variant.inventory_item_id))) {
+            outStockVariant.push(e);
+            console.log("os", e);
+        }
     }
-    res.status(200).json({ status: 'success', data: removeVariant })
+    res.status(200).json({ status: 'success', data: removeVariant, dataos: outStockVariant })
 
 }
